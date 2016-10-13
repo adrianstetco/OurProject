@@ -42,15 +42,25 @@ def visualize(ts, TALibFuncName):
   df.plot(); plt.show()
 
 
+#generate matrix of Xs to be input in the Neural Net
+# this tests the addition of TALib functions as columns to the Xs
+def testGenMatrix(ts, TALibFuncNames):
+    hotOneTALib = np.zeros(150)
+    hotOneTALib[1] = 1 
+    hotOneTALib[0] = 1 
+    hotOneTALib[3] = 1 
+    xs = generateMatrix(ts, hotOneTALib, TALibFuncNames) 
+    print(xs)
 
-#converted = ts.asfreq('60Min', method='pad')
+# converted = ts.asfreq('60Min', method='pad') 
 #ts=ts.ix[1:50]
 #train, test = split(s, 0.6)
 #generate(train,5)
 #print(ts.values)
 #print(SMA)
 
-TALibFuncNames = np.array(pd.read_csv('C:\Users\Adrian\Desktop\TA-list.txt'))
-ts = readts('C:\Users\Adrian\Desktop\EURAUDSmall.txt', norm="TRUE")
-ts=ts.ix[1:500]
-visualize(ts, TALibFuncNames[1])
+TALibFuncNames = np.array(pd.read_csv('TA-list.txt')) 
+ts = readts('EURAUDSmall.txt', norm="TRUE") 
+ts = ts.ix[1:500]
+ testGenMatrix(ts, TALibFuncNames) 
+#visualize(ts, TALibFuncNames[1])
