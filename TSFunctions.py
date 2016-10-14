@@ -71,7 +71,7 @@ def testGenMatrix(ts, TALibFuncNames):
 #print(ts.values)
 #print(SMA)
 
-TALibFuncNames = np.array(pd.read_csv('TA-list.txt'))
+TALibFuncNames = np.array(pd.read_csv('TA-list2.txt'))
 ts = readts('EURAUDSmall.txt', norm="TRUE")
 ts = ts.ix[1:500]
 testGenMatrix(ts, TALibFuncNames)
