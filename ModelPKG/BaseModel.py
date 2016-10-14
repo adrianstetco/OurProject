@@ -1,6 +1,8 @@
 class abstractmodel(object):
-    def train(self): print("Linear train")
-    def test(self): print("Linear test")
+    def train(self, data): return
+    def test(self, data): return
+    
+
     
 
 
