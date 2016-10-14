@@ -4,6 +4,8 @@ import pandas as pd
 import matplotlib
 import math
 from talib import abstract
+from numpy import *
+from ModelPKG import ModelFactory
 matplotlib.style.use('ggplot')
 
 
@@ -40,6 +42,7 @@ def visualize(ts, TALibFuncName):
   df = pd.DataFrame(concat, index=ts.index, columns= ['Price',TALibFuncName[0]])
   df.plot(); plt.show()
 
+
 #generate matrix of Xs to be input in the Neural Net
 def generateMatrix(ts, requiredTALibFunctions, TALibFuncName):
     xs = ts.values
@@ -49,20 +52,38 @@ def generateMatrix(ts, requiredTALibFunctions, TALibFuncName):
     for i in xrange(len(requiredTALibFunctions)):
         if requiredTALibFunctions[i] != 0:
             TALibFunction = abstract.Function(TALibFuncName[i][0])
-            print(TALibFuncName[i][0])
+           # print(TALibFuncName[i][0])
             TALibResult = TALibFunction(inputs)  # !!parameters need to be adjusted for each TALib function
             xs = np.column_stack((xs, TALibResult)) # appends columns containing TALib func results
                                                     # to the currency pair closing price value
-    return xs
+    return xs.astype(np.float)
 
-
+#generate examples from matrix
+    
+def generateExamples(xs, howMuchLookAhead):
+    examples = np.zeros(shape=(xs.shape[0],xs.shape[1]+1))
+    for i in xrange(xs.shape[0]-howMuchLookAhead):
+        sum=0
+        x= xs[i,:]; #current row
+        x[np.isnan(x)] = 0 # how do we replace nans?; currently with zeros
+        #-1 sell; 0 hold; 1 buy
+        # look ahead, if howMany=3 and the next 3 prices are rising then Buy (2), if next 3 dropping = Sale(-1) else Hold (0) 
+        for j in xrange(howMuchLookAhead):           
+             if (xs[i+j, 0]< xs[i+j+1, 0]): sum=sum+1
+             if (xs[i+j, 0]> xs[i+j+1, 0]): sum=sum-1
+        examples[i,0:len(x)]= x    
+        if (sum == howMuchLookAhead):  examples[i,len(x)]=2        
+        if (sum == -howMuchLookAhead): examples[i,len(x)]=-1       
+        if ((sum < howMuchLookAhead) and (sum>-howMuchLookAhead)): examples[i,len(x)]=0   
+    return examples
+    
+    
 # test generate Matrix
 # this tests the addition of TALib functions as columns to the Xs
 def testGenMatrix(ts, TALibFuncNames):
     hotOneTALib = [1] * 31
     xs = generateMatrix(ts, hotOneTALib, TALibFuncNames)
-    print(xs.shape)
-
+    return xs
 
 #converted = ts.asfreq('60Min', method='pad')
 #ts=ts.ix[1:50]
@@ -74,4 +95,16 @@ def testGenMatrix(ts, TALibFuncNames):
 TALibFuncNames = np.array(pd.read_csv('TA-list2.txt'))
 ts = readts('EURAUDSmall.txt', norm="TRUE")
 ts = ts.ix[1:500]
-testGenMatrix(ts, TALibFuncNames)
+test= testGenMatrix(ts, TALibFuncNames)
+examples= generateExamples(test,3)
+#print(examples.shape)
+train, test = split(examples, 0.8)
+#print(train.shape)
+#print(test.shape)
+DeepNet = ModelFactory.Factory.create("DeepNet")
+DeepNet.train(train)
+
+
+
+
+
