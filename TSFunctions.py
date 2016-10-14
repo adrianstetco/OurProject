@@ -40,7 +40,6 @@ def visualize(ts, TALibFuncName):
   df = pd.DataFrame(concat, index=ts.index, columns= ['Price',TALibFuncName[0]])
   df.plot(); plt.show()
 
-
 #generate matrix of Xs to be input in the Neural Net
 def generateMatrix(ts, requiredTALibFunctions, TALibFuncName):
     xs = ts.values
@@ -50,7 +49,8 @@ def generateMatrix(ts, requiredTALibFunctions, TALibFuncName):
     for i in xrange(len(requiredTALibFunctions)):
         if requiredTALibFunctions[i] != 0:
             TALibFunction = abstract.Function(TALibFuncName[i][0])
-            TALibResult = TALibFunction(inputs, 60)  # !!parameters need to be adjusted for each TALib function
+            print(TALibFuncName[i][0])
+            TALibResult = TALibFunction(inputs)  # !!parameters need to be adjusted for each TALib function
             xs = np.column_stack((xs, TALibResult)) # appends columns containing TALib func results
                                                     # to the currency pair closing price value
     return xs
@@ -59,12 +59,10 @@ def generateMatrix(ts, requiredTALibFunctions, TALibFuncName):
 # test generate Matrix
 # this tests the addition of TALib functions as columns to the Xs
 def testGenMatrix(ts, TALibFuncNames):
-    hotOneTALib = np.zeros(150)
-    hotOneTALib[1] = 1
-    hotOneTALib[0] = 1
-    hotOneTALib[3] = 1
+    hotOneTALib = [1] * 31
     xs = generateMatrix(ts, hotOneTALib, TALibFuncNames)
-    print(xs)
+    print(xs.shape)
+
 
 #converted = ts.asfreq('60Min', method='pad')
 #ts=ts.ix[1:50]
