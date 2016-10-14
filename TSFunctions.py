@@ -3,10 +3,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib
 import math
-import talib as tb
 from talib import abstract
-from talib.abstract import *
 matplotlib.style.use('ggplot')
+
 
 np.set_printoptions(threshold=np.nan)
 
@@ -35,32 +34,49 @@ def generate(dataset, n, timestamps="FALSE"):
 # visualize price time series together with indicator in the same plot
 def visualize(ts, TALibFuncName):
   inputs = {'close': np.array(ts.values,dtype='f8')}
-  TALibFunction= abstract.Function(TALibFuncName[0])
-  TALibResult= TALibFunction(inputs,60) #parameter for SMA
-  concat= np.column_stack([ts.values, TALibResult])
+  TALibFunction = abstract.Function(TALibFuncName[0])
+  TALibResult = TALibFunction(inputs,60) #parameter for SMA
+  concat = np.column_stack([ts.values, TALibResult])
   df = pd.DataFrame(concat, index=ts.index, columns= ['Price',TALibFuncName[0]])
   df.plot(); plt.show()
 
 
 #generate matrix of Xs to be input in the Neural Net
+def generateMatrix(ts, requiredTALibFunctions, TALibFuncName):
+    inputs = {'close': np.array(ts.values, dtype='f8')}
+    xs = ts.values # create ndarray with price values
+
+    # requiredTALibFunctions = [0, 1, 0 ,0, ... , 0, 0]
+    for i in xrange(len(requiredTALibFunctions)):
+        if requiredTALibFunctions[i] != 0:
+            TALibFunction = abstract.Function(TALibFuncName[i][0])
+            TALibResult = TALibFunction(inputs, 60)  # !!parameters need to be adjusted for each TALib function
+
+            xs = np.column_stack((xs, TALibResult)) # appends columns containing TALib func results
+                                                    # to the currency pair closing price value
+
+
+    return xs
+
+
+# test generate Matrix
 # this tests the addition of TALib functions as columns to the Xs
 def testGenMatrix(ts, TALibFuncNames):
     hotOneTALib = np.zeros(150)
-    hotOneTALib[1] = 1 
-    hotOneTALib[0] = 1 
-    hotOneTALib[3] = 1 
-    xs = generateMatrix(ts, hotOneTALib, TALibFuncNames) 
+    hotOneTALib[1] = 1
+    hotOneTALib[0] = 1
+    hotOneTALib[3] = 1
+    xs = generateMatrix(ts, hotOneTALib, TALibFuncNames)
     print(xs)
 
-# converted = ts.asfreq('60Min', method='pad') 
+#converted = ts.asfreq('60Min', method='pad')
 #ts=ts.ix[1:50]
 #train, test = split(s, 0.6)
 #generate(train,5)
 #print(ts.values)
 #print(SMA)
 
-TALibFuncNames = np.array(pd.read_csv('TA-list.txt')) 
-ts = readts('EURAUDSmall.txt', norm="TRUE") 
+TALibFuncNames = np.array(pd.read_csv('TA-list.txt'))
+ts = readts('EURAUDSmall.txt', norm="TRUE")
 ts = ts.ix[1:500]
- testGenMatrix(ts, TALibFuncNames) 
-#visualize(ts, TALibFuncNames[1])
+testGenMatrix(ts, TALibFuncNames)
