@@ -43,19 +43,16 @@ def visualize(ts, TALibFuncName):
 
 #generate matrix of Xs to be input in the Neural Net
 def generateMatrix(ts, requiredTALibFunctions, TALibFuncName):
-    inputs = {'close': np.array(ts.values, dtype='f8')}
-    xs = ts.values # create ndarray with price values
-
+    xs = ts.values
+    inputs = {'close': np.array(xs, dtype='f8')}
+     # create ndarray with price values
     # requiredTALibFunctions = [0, 1, 0 ,0, ... , 0, 0]
     for i in xrange(len(requiredTALibFunctions)):
         if requiredTALibFunctions[i] != 0:
             TALibFunction = abstract.Function(TALibFuncName[i][0])
             TALibResult = TALibFunction(inputs, 60)  # !!parameters need to be adjusted for each TALib function
-
             xs = np.column_stack((xs, TALibResult)) # appends columns containing TALib func results
                                                     # to the currency pair closing price value
-
-
     return xs
 
 
