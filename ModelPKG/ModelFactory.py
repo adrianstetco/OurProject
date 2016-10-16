@@ -13,4 +13,4 @@ def test():
         listOfModels[i].train()  
         listOfModels[i].test() 
     
-test()
+#test()
