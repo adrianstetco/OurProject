@@ -1,6 +1,9 @@
 from BaseModel import abstractmodel
 import tflearn
 
+#this is just a test class
+#not working yet
+
 class model(abstractmodel):
     def train(self, data):
         print("Linear Regression train")
