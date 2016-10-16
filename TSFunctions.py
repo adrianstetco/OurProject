@@ -101,8 +101,12 @@ examples= generateExamples(test,3)
 train, test = split(examples, 0.8)
 #print(train.shape)
 #print(test.shape)
-DeepNet = ModelFactory.Factory.create("DeepNet")
-DeepNet.train(train)
+
+#DeepNet = ModelFactory.Factory.create("DeepNet")
+#DeepNet.train(train)
+
+LinearModel = ModelFactory.Factory.create("Linear")
+LinearModel.train(train)
 
 
 
