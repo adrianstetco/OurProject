@@ -49,7 +49,7 @@ def generateMatrix(ts, requiredTALibFunctions, TALibFuncName):
     inputs = {'close': np.array(xs, dtype='f8')}
      # create ndarray with price values
     # requiredTALibFunctions = [0, 1, 0 ,0, ... , 0, 0]
-    for i in xrange(len(requiredTALibFunctions)):
+    for i in range(len(requiredTALibFunctions)):
         if requiredTALibFunctions[i] != 0:
             TALibFunction = abstract.Function(TALibFuncName[i][0])
            # print(TALibFuncName[i][0])
@@ -62,29 +62,32 @@ def generateMatrix(ts, requiredTALibFunctions, TALibFuncName):
     
 def generateExamples(xs, howMuchLookAhead):
     examples = np.zeros(shape=(xs.shape[0],xs.shape[1]+1))
-    for i in xrange(xs.shape[0]-howMuchLookAhead):
+    for i in range(xs.shape[0]-howMuchLookAhead):
         sum=0
         x= xs[i,:]; #current row
         x[np.isnan(x)] = 0 # how do we replace nans?; currently with zeros
         #-1 sell; 0 hold; 1 buy
         # look ahead, if howMany=3 and the next 3 prices are rising then Buy (2), if next 3 dropping = Sale(-1) else Hold (0) 
-        for j in xrange(howMuchLookAhead):           
+        for j in range(howMuchLookAhead):           
              if (xs[i+j, 0]< xs[i+j+1, 0]): sum=sum+1
              if (xs[i+j, 0]> xs[i+j+1, 0]): sum=sum-1
         examples[i,0:len(x)]= x    
-        if (sum == howMuchLookAhead):  examples[i,len(x)]=2        
-        if (sum == -howMuchLookAhead): examples[i,len(x)]=-1       
-        if ((sum < howMuchLookAhead) and (sum>-howMuchLookAhead)): examples[i,len(x)]=0   
+        if (sum == howMuchLookAhead):  examples[i,len(x)]=1        
+        if (sum == -howMuchLookAhead): examples[i,len(x)]=0       
+        if ((sum < howMuchLookAhead) and (sum>-howMuchLookAhead)): examples[i,0:len(x)]=0   
     return examples
     
     
 # test generate Matrix
 # this tests the addition of TALib functions as columns to the Xs
 def testGenMatrix(ts, TALibFuncNames):
-    hotOneTALib = [1] * 31
+    hotOneTALib = [1] * 31 
+    #hotOneTALib[2]=0 
     xs = generateMatrix(ts, hotOneTALib, TALibFuncNames)
     return xs
 
+    
+    
 #converted = ts.asfreq('60Min', method='pad')
 #ts=ts.ix[1:50]
 #train, test = split(s, 0.6)
@@ -94,19 +97,25 @@ def testGenMatrix(ts, TALibFuncNames):
 
 TALibFuncNames = np.array(pd.read_csv('TA-list2.txt'))
 ts = readts('EURAUDSmall.txt', norm="TRUE")
-ts = ts.ix[1:500]
+ts = ts.ix[1:155000]
 test= testGenMatrix(ts, TALibFuncNames)
-examples= generateExamples(test,3)
-#print(examples.shape)
-train, test = split(examples, 0.8)
+examples= generateExamples(test,4)
+
+examples = np.vstack({tuple(row) for row in examples})
+#print(examples)
+
+print(examples.shape)
+train, test = split(examples, 0.7)
 #print(train.shape)
 #print(test.shape)
 
 #DeepNet = ModelFactory.Factory.create("DeepNet")
 #DeepNet.train(train)
 
-LinearModel = ModelFactory.Factory.create("Linear")
-LinearModel.train(train)
+LinearModel = ModelFactory.Factory.create("DeepNet")
+LinearModel.train(train, test)
+#LinearModel.test(test)
+
 
 
 
