@@ -3,8 +3,10 @@ import numpy as np
 import tflearn
 
 class model(abstractmodel):
-    m=0
-    def train(self, data,data2): 
+    def __init__(self):
+        self.model = None # model
+
+    def train(self, data):
         print("Deep Net train")
         net = tflearn.input_data(shape=[None, 31])
         net = tflearn.fully_connected(net, 200)
@@ -13,7 +15,7 @@ class model(abstractmodel):
         net = tflearn.fully_connected(net, 2, activation='softmax')
         net = tflearn.regression(net)
         # Define model
-        model = tflearn.DNN(net)
+        self.model = tflearn.DNN(net)
         # Start training (apply gradient descent algorithm)
         examples=data[:,0:data.shape[1]-2]
         print(examples.shape)
@@ -23,22 +25,15 @@ class model(abstractmodel):
         print(type(labels))
         labels1 = tflearn.data_utils.to_categorical(labels, 2)
         
-        model.fit(examples, labels1 , n_epoch=20, batch_size=50, show_metric=True)
-        
-        examples2=data2[:,0:data2.shape[1]-2]
-        labels2=data2[:,data2.shape[1]-1]
-        #print(labels1)
-        #print(labels)
-        #print(examples2.shape)
-        #print(labels2.shape)
-        print("Accuracy")
-        print(model.evaluate(examples2, tflearn.data_utils.to_categorical(labels2, 2)))
-        #print(model.predict(examples2))
-        #print(tflearn.data_utils.to_categorical(labels2, 2))
-        return model
-    
+        self.model.fit(examples, labels1 , n_epoch=20, batch_size=50, show_metric=True)
+
     def test(self, data):
         print("Deep Net test")
-        #print(m.predict(data))
+        examples2 = data[:, 0:data.shape[1] - 2]
+        labels2 = data[:, data.shape[1] - 1]
+        print("Accuracy")
+        print(self.model.evaluate(examples2, tflearn.data_utils.to_categorical(labels2, 2)))
+
+        #print(model.predict(data))
         
     
