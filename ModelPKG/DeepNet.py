@@ -1,5 +1,4 @@
 from ModelPKG.BaseModel import abstractmodel
-import numpy as np
 import tflearn
 
 class model(abstractmodel):
