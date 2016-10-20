@@ -33,6 +33,6 @@ class model(abstractmodel):
         print("Accuracy")
         print(self.model.evaluate(examples2, tflearn.data_utils.to_categorical(labels2, 2)))
 
-        #print(model.predict(data))
+        print(self.model.predict(examples2))
         
     

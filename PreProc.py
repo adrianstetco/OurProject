@@ -1,3 +1,4 @@
+from numpy import newaxis
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -17,6 +18,36 @@ def readts(path, norm="FALSE"):
     ts = pd.Series(df[:, 1], index=df[:, 0])
     #if norm == "TRUE": df[:, 1] = df[:, 1] / np.linalg.norm(df[:, 1]) not yet
     return ts
+
+
+def label(trainLSTM):
+    #labelLSTM = np.zeros(shape=(trainLSTM.shape[0], 2))
+    labelLSTM = np.zeros(trainLSTM.shape[0])
+    for i in range(trainLSTM.shape[0] - 1):
+        if trainLSTM[i, 0, trainLSTM.shape[2]-1] > trainLSTM[i+1, 0, trainLSTM.shape[2]-1]:
+            labelLSTM[i] = 1 #buy
+        elif trainLSTM[i, 0, trainLSTM.shape[2]-1] < trainLSTM[i+1, 0, trainLSTM.shape[2]-1]:
+            labelLSTM[i] = -1 #sell
+    return labelLSTM
+
+#Splits Numpy array into "images" for LSTM
+def split2(dataset, size):
+    blocks = int(len(dataset) / size)
+    train = dataset[0:blocks * size, :]
+    return train
+
+def blockshaped(arr, nrows, ncols):
+    """
+    Return an array of shape (n, nrows, ncols) where
+    n * nrows * ncols = arr.size
+
+    If arr is a 2D array, the returned array should look like n subblocks with
+    each subblock preserving the "physical" layout of arr.
+    """
+    h, w = arr.shape
+    return (arr.reshape(h//nrows, nrows, -1, ncols)
+               .swapaxes(1,2)
+               .reshape(-1, nrows, ncols))
 
 # SPLITS NUMPY ARRAY INTO TRAINING AND TESTING SETS
 def split(dataset, percentagetraining):
